@@ -5,6 +5,13 @@ import time
 from itertools import islice
 
 ncpu = 0
+GOTO_START=0
+GOTO_END=1
+STAY=-1
+
+NO_SORT=0
+FREQ_SORT=1
+TOTAL_CNT_SORT=2
 
 # dict = {id= col0, count = (1,2,3 ...) , name = "str"}
 
@@ -79,7 +86,7 @@ def calculate_diff_and_parse(d1, d2):
                 col_width = temp
 
         temp = len(str(total_cnt))
-        if temp > col_width:
+        if temp >= col_width:
             col_width = temp + 1
 
         int_diff = {
@@ -95,41 +102,52 @@ def calculate_diff_and_parse(d1, d2):
 
     return ret_list
 
-start = 0
-def display_data(d, scr):
-    global start
+cur_pos=0
+def display_data(scr, d, left_or_right, start_or_end):
+    global cur_pos
     scr.erase()
-    xy = scr.getbegyx()
     wl = scr.getmaxyx()
-    #scr.addstr("xy%s wl%s" % (str(xy), str(wl)))
 
-    scr.timeout(0)
+    d_len = len(d)
 
-    c = scr.getch()
-    if c == 113: exit()  # q
-    elif c == curses.KEY_RIGHT:
-        start = start + 1
-    elif c == curses.KEY_LEFT:
-        if start != 0:
-            start = start - 1
-    elif c == curses.KEY_HOME:
-        start = 0
-    elif c == curses.KEY_END:
-        start = len(d) - 10
+    if left_or_right == 1:
+        max_width = 0
+        temp_pos = 0
+        for idx in range(d_len):
+            if ((6 + max_width + d[-(idx+1)]["col_width"]) < wl[1]):
+                max_width = max_width + d[-(idx+1)]["col_width"]
+            else:
+                temp_pos = d_len - idx
+                break
+
+        if cur_pos < temp_pos:
+            cur_pos = cur_pos + 1
+
+    if left_or_right == -1:
+        if cur_pos > 0:
+            cur_pos = cur_pos - 1
+
+    if start_or_end == GOTO_START:
+        cur_pos = 0
+
+    if start_or_end == GOTO_END:
+        max_width = 0
+        for idx in range(d_len):
+            if ((6 + max_width + d[-(idx+1)]["col_width"]) < wl[1]):
+                max_width = max_width + d[-(idx+1)]["col_width"]
+            else:
+                cur_pos = d_len - idx
+                break
 
     for idx in range(ncpu):
         scr.addstr(idx+1, 0, "{:>6}".format("CPU%d:" % (idx)))
-
     scr.addstr(idx+2, 0, 'Total:')
 
-    newd = sorted(d, key=lambda k: k['change'], reverse=True)
-    #newd = sorted(d, key=lambda k: k['change'])
+    if cur_pos != 0:
+        d = islice(d, cur_pos, d_len)
 
     y = 6
-    if start != 0:
-        newd = islice(newd, start, len(newd))
-
-    for int_l in newd:
+    for int_l in d:
         col_w = int_l["col_width"]
 
         if (y + col_w) > wl[1]:
@@ -150,14 +168,49 @@ def main(screen):
 
     data1 = collect_int_stats()
     data1 = process_int_stats(data1)
+
+    screen.timeout(0)
+    sort = NO_SORT
     while True:
         screen.refresh()
         time.sleep(1)
         data2 = collect_int_stats()
         data2 = process_int_stats(data2)
         data_diff = calculate_diff_and_parse(data1, data2)
-        display_data(data_diff, screen)
         data1 = data2
+
+        if sort == FREQ_SORT:
+            sort_data = sorted(data_diff, key=lambda k: k['change'], reverse=True)
+            data_diff = sort_data
+
+        if sort == TOTAL_CNT_SORT:
+            sort_data = sorted(data_diff, key=lambda k: k['total'], reverse=True)
+            data_diff = sort_data
+
+        display_data(screen, data_diff, 0, STAY)
+
+        while True:
+            c = screen.getch()
+
+            if c == 113:
+                exit()  # q
+            elif c == 102:
+                sort = FREQ_SORT
+            elif c == 116:
+                sort = TOTAL_CNT_SORT
+            elif c == 110:
+                sort = NO_SORT
+            elif c == curses.KEY_RIGHT:
+                display_data(screen, data_diff, 1, STAY)
+            elif c == curses.KEY_LEFT:
+                display_data(screen, data_diff, -1, STAY)
+            elif c == curses.KEY_HOME:
+                display_data(screen, data_diff, 0, GOTO_START)
+            elif c == curses.KEY_END:
+                display_data(screen, data_diff, 0, GOTO_END)
+            elif c == -1:
+                break
+
 
 try:
     curses.wrapper(main)
