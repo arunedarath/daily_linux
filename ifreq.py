@@ -6,7 +6,7 @@
 # Nowadays everybody has very wide monitors, so why not display the /proc/interrupts
 # in landscape mode?.
 #
-# ifreq.py displays the interrupts in a ncurses window and uses the below keys
+# ifreq.py displays the interrupt's frequency in a ncurses window and uses the below keys
 # t -> sort the interrupts based on total occurence
 # f -> sort the interrupts based on frequency. aka, itop
 # n -> don't sort. Display /proc/interrupts as it it
