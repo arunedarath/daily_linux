@@ -1,9 +1,9 @@
 #!/usr/bin/python -tt
 #
-# This is an attempt to make the contents of /proc/interrupts more eye candy.
+# This script is an attempt to make the contents of /proc/interrupts more eye candy.
 # When there are more than 8 CPUs and hundreds of active interrupts,
 # output from 'cat /proc/interrupts' become jumbled and becomes hard to decode.
-# Nowadays everybody has very wide monitors, so why not display the /proc/interrupts
+# Wider monitors are the new norm, so why not display the /proc/interrupts
 # in landscape mode?.
 #
 # ifreq.py displays the interrupt's frequency in a ncurses window and uses the below keys
@@ -28,6 +28,23 @@ STAY=-1
 NO_SORT=0
 FREQ_SORT=1
 TOTAL_CNT_SORT=2
+
+def display_help(scr):
+    scr.timeout(-1)
+    scr.erase()
+    scr.addstr(0, 0, "Display the interrupt frequency", curses.A_UNDERLINE)
+    scr.addstr(1, 0, "Press the below keys to alter the output")
+    scr.addstr(2, 0, "  t: sort based on total interrupt count")
+    scr.addstr(3, 0, "  f: sort based on frequency")
+    scr.addstr(4, 0, "  n: cancel the sort")
+    scr.addstr(5, 0, "  Home: goto beggining of display")
+    scr.addstr(6, 0, "  End: goto end of display")
+    scr.addstr(7, 0, "  Right arrow: move to right by one column")
+    scr.addstr(8, 0, "  Left arrow: move to left by one column")
+    scr.addstr(9, 0, "  h: display this message")
+    scr.addstr(10, 0, "  q: quit")
+    scr.getch()
+    scr.timeout(0)
 
 def collect_int_stats():
     path = "/proc/interrupts"
@@ -210,12 +227,14 @@ def main(screen):
 
             if c == 113:
                 exit()  # q
-            elif c == 102:
+            elif c == 102: # f
                 sort = FREQ_SORT
-            elif c == 116:
+            elif c == 116: # t
                 sort = TOTAL_CNT_SORT
-            elif c == 110:
+            elif c == 110: # n
                 sort = NO_SORT
+            elif c == 104: # h
+                display_help(screen)
             elif c == curses.KEY_RIGHT:
                 display_data(screen, data_diff, 1, STAY)
             elif c == curses.KEY_LEFT:
