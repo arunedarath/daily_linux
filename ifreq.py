@@ -46,6 +46,7 @@ def display_help(scr):
     scr.getch()
     scr.timeout(0)
 
+
 def collect_int_stats():
     path = "/proc/interrupts"
     fop = open(path, "r")
@@ -133,6 +134,18 @@ def calculate_diff_and_parse(d1, d2):
 
     return ret_list
 
+def get_print_start_idx(d, d_len, wl):
+    max_width = 0
+    print_start_pos = 0
+    for idx in range(d_len):
+        if ((6 + max_width + d[-(idx+1)]["col_width"]) < wl[1]):
+            max_width = max_width + d[-(idx+1)]["col_width"]
+        else:
+            print_start_pos = d_len - idx
+            break
+
+    return print_start_pos
+
 
 cur_pos=0
 def display_data(scr, d, left_or_right, start_or_end):
@@ -143,16 +156,8 @@ def display_data(scr, d, left_or_right, start_or_end):
     d_len = len(d)
 
     if left_or_right == 1:
-        max_width = 0
-        temp_pos = 0
-        for idx in range(d_len):
-            if ((6 + max_width + d[-(idx+1)]["col_width"]) < wl[1]):
-                max_width = max_width + d[-(idx+1)]["col_width"]
-            else:
-                temp_pos = d_len - idx
-                break
-
-        if cur_pos < temp_pos:
+        print_start = get_print_start_idx(d, d_len, wl)
+        if cur_pos < print_start:
             cur_pos = cur_pos + 1
 
     if left_or_right == -1:
@@ -163,13 +168,7 @@ def display_data(scr, d, left_or_right, start_or_end):
         cur_pos = 0
 
     if start_or_end == GOTO_END:
-        max_width = 0
-        for idx in range(d_len):
-            if ((6 + max_width + d[-(idx+1)]["col_width"]) < wl[1]):
-                max_width = max_width + d[-(idx+1)]["col_width"]
-            else:
-                cur_pos = d_len - idx
-                break
+        cur_pos = get_print_start_idx(d, d_len, wl)
 
     for idx in range(ncpu):
         scr.addstr(idx+1, 0, "{:>6}".format("CPU%d:" % (idx)))
