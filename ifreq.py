@@ -1,4 +1,20 @@
 #!/usr/bin/python -tt
+#
+# This is an attempt to make the contents of /proc/interrupts more eye candy.
+# When there are more than 8 CPUs and hundreds of active interrupts,
+# output from 'cat /proc/interrupts' become jumbled and becomes hard to decode.
+# Nowadays everybody has very wide monitors, so why not display the /proc/interrupts
+# in landscape mode?.
+#
+# ifreq.py displays the interrupts in a ncurses window and uses the below keys
+# t -> sort the interrupts based on total occurence
+# f -> sort the interrupts based on frequency. aka, itop
+# n -> don't sort. Display /proc/interrupts as it it
+# Home -> move to the beginning of display
+# End -> move to the end of display
+# Right arrow -> move the display right by one column
+# Left arrow -> move the display left by one column
+# q -> quit
 
 import curses
 import time
@@ -12,8 +28,6 @@ STAY=-1
 NO_SORT=0
 FREQ_SORT=1
 TOTAL_CNT_SORT=2
-
-# dict = {id= col0, count = (1,2,3 ...) , name = "str"}
 
 def collect_int_stats():
     path = "/proc/interrupts"
@@ -102,6 +116,7 @@ def calculate_diff_and_parse(d1, d2):
 
     return ret_list
 
+
 cur_pos=0
 def display_data(scr, d, left_or_right, start_or_end):
     global cur_pos
@@ -141,6 +156,7 @@ def display_data(scr, d, left_or_right, start_or_end):
 
     for idx in range(ncpu):
         scr.addstr(idx+1, 0, "{:>6}".format("CPU%d:" % (idx)))
+
     scr.addstr(idx+2, 0, 'Total:')
 
     if cur_pos != 0:
