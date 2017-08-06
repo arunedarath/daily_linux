@@ -244,6 +244,8 @@ def main(screen):
                 display_data(screen, data_diff, 0, GOTO_END)
             elif c == -1:
                 break
+            else:
+                display_help(screen)
 
 
 try:
