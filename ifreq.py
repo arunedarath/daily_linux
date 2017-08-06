@@ -19,6 +19,7 @@
 import curses
 import time
 from itertools import islice
+import argparse
 
 ncpu = 0
 GOTO_START=0
@@ -249,6 +250,18 @@ def main(screen):
 
 
 try:
+    parser = argparse.ArgumentParser(description="""Parse /proc/interrupts and display it in ncurses window according to frequency
+The below keys can be used in ncurses output
+        t -> sort the interrupts based on total occurence
+        f -> sort the interrupts based on frequency. aka, itop
+        n -> don't sort. Display /proc/interrupts as it is
+        Home -> move to the beginning of display
+        End -> move to the end of display
+        Right arrow -> move the display right by one column
+        Left arrow -> move the display left by one column
+        q -> quit""",
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    args = parser.parse_args()
     curses.wrapper(main)
 
 except KeyboardInterrupt:
