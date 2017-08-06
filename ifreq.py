@@ -22,13 +22,14 @@ from itertools import islice
 import argparse
 
 ncpu = 0
-GOTO_START=0
-GOTO_END=1
-STAY=-1
+GOTO_START = 0
+GOTO_END = 1
+STAY = -1
 
-NO_SORT=0
-FREQ_SORT=1
-TOTAL_CNT_SORT=2
+NO_SORT = 0
+FREQ_SORT = 1
+TOTAL_CNT_SORT = 2
+
 
 def display_help(scr):
     scr.timeout(-1)
@@ -64,7 +65,7 @@ def count_cpus():
 
 def process_int_stats(data):
     ret_list = []
-    #Skipp line1, it contains CPU names
+    # Skipp line1, it contains CPU names
     for line in islice(data, 1, None):
         line = line.split()
         int_stat = []
@@ -83,9 +84,9 @@ def process_int_stats(data):
                 int_name += name
 
         int_info = {
-                'id' : int_id,
-                'counts' : int_stat,
-                'name' : int_name
+                'id': int_id,
+                'counts': int_stat,
+                'name': int_name
         }
 
         ret_list.append(int_info)
@@ -106,7 +107,7 @@ def calculate_diff_and_parse(d1, d2):
 
         total_cnt = 0
 
-        #Five is the max default width required to print the int of type LOC:
+        # Five is the max default width required to print the int of type LOC:
         col_width = 5
         change = 0
         for idx_cnt in range(len(int1_cnt)):
@@ -123,17 +124,18 @@ def calculate_diff_and_parse(d1, d2):
             col_width = temp + 1
 
         int_diff = {
-                'id' : int1["id"],
-                'counts' : diff_cnt,
-                'name' : int1["name"],
-                'total' : total_cnt,
-                'change' : change,
-                'col_width' : col_width
+                'id': int1["id"],
+                'counts': diff_cnt,
+                'name': int1["name"],
+                'total': total_cnt,
+                'change': change,
+                'col_width': col_width
         }
 
         ret_list.append(int_diff)
 
     return ret_list
+
 
 def get_print_start_idx(d, d_len, wl):
     max_width = 0
@@ -148,7 +150,9 @@ def get_print_start_idx(d, d_len, wl):
     return print_start_pos
 
 
-cur_pos=0
+cur_pos = 0
+
+
 def display_data(scr, d, left_or_right, start_or_end):
     global cur_pos
     scr.erase()
@@ -191,7 +195,7 @@ def display_data(scr, d, left_or_right, start_or_end):
         for idx in range(len(int_cnt)):
             scr.addstr(idx+1, y, ("{:>%d}" % (col_w)).format("%d" % (int_cnt[idx])))
         scr.addstr(idx+2, y, ("{:>%d}" % (col_w)).format("%d" % (int_l["total"])))
-        y=y+col_w
+        y = y+col_w
 
 
 def main(screen):
@@ -227,13 +231,13 @@ def main(screen):
 
             if c == 113:
                 exit()  # q
-            elif c == 102: # f
+            elif c == 102:  # f
                 sort = FREQ_SORT
-            elif c == 116: # t
+            elif c == 116:  # t
                 sort = TOTAL_CNT_SORT
-            elif c == 110: # n
+            elif c == 110:  # n
                 sort = NO_SORT
-            elif c == 104: # h
+            elif c == 104:  # h
                 display_help(screen)
             elif c == curses.KEY_RIGHT:
                 display_data(screen, data_diff, 1, STAY)
